@@ -5,17 +5,22 @@
 
 #define TAMANHO_JANELA 750
 
+// Callbacks
 void init();
 void idle();
 void display();
 void keyUp(unsigned char key, int x, int y);
 void keyPress(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
+void mouseMotion(int x, int y);
+
 
 // Global variables
-float gX=0;
-float gY=0;
 int keyStatus[256];
+float gX=0, gY=0;
+float mouseFixedX=0, mouseFixedY=0;
+bool drag = false;
+
 
 int main(int argc, char** argv){
    glutInit(&argc, argv);
@@ -24,20 +29,23 @@ int main(int argc, char** argv){
    glutInitWindowSize (TAMANHO_JANELA, TAMANHO_JANELA); 
    glutInitWindowPosition (540, 100);
    
-   glutCreateWindow ("hello world");   
+   glutCreateWindow ("Square Game");   
    init ();
 
-   glutIdleFunc(idle);
-   glutMouseFunc(mouse);
    glutKeyboardUpFunc(keyUp);   
    glutKeyboardFunc(keyPress);
+   glutMouseFunc(mouse);
+   glutMotionFunc(mouseMotion);
+   
    glutDisplayFunc(display); 
+   glutIdleFunc(idle);
+   
    glutMainLoop();
    
    return 0;
 }
 
-// Callbacks =======
+// Callbacks impl =================================
 void display(void){
    glClear (GL_COLOR_BUFFER_BIT);   // Clear pixels
 
@@ -67,7 +75,8 @@ void init (void) {
 
 //=============================================
 void keyPress(unsigned char key, int x, int y){
-   keyStatus[key] = 1;  
+   keyStatus[key] = 1;
+   glutPostRedisplay();  
 }
 
 //=========================================
@@ -89,9 +98,38 @@ void idle(){
 void mouse(int button, int state, int x, int y)
 {  
    y = TAMANHO_JANELA-y;
-   gX = (float)x/TAMANHO_JANELA -0.25;
-   gY = (float)y/TAMANHO_JANELA -0.25;
+   
+   //===================================
+   // This chunk is for click motion
+   // gX = (float)x/TAMANHO_JANELA -0.25;
+   // gY = (float)y/TAMANHO_JANELA -0.25;
+   //===================================
 
-   // Debug
-   printf("X: %d, Y: %d\n gX: %lf, gY: %lf\n", x, y, gX, gY);
+   if(button == GLUT_LEFT_BUTTON and state == GLUT_DOWN){
+
+      float xPos = (float)x/TAMANHO_JANELA;
+      float yPos = (float)y/TAMANHO_JANELA;
+      
+      if(xPos > 0.25+gX and xPos < 0.75+gX and yPos > 0.25+gY and yPos < 0.75+gY){  // If pointer is in range
+         drag = true;
+         mouseFixedX = xPos;
+         mouseFixedY = yPos;
+      }
+   }
+   if(button == GLUT_LEFT_BUTTON and state == GLUT_UP){
+      drag = false;
+   }
+   glutPostRedisplay();
+}
+
+//==============================
+void mouseMotion(int x, int y){
+   if(drag){
+      y = TAMANHO_JANELA - y;
+      float xPos = (float)x/TAMANHO_JANELA;
+      float yPos = (float)y/TAMANHO_JANELA;
+      gX = xPos - mouseFixedX;
+      gY = yPos - mouseFixedY;
+   }
+   glutPostRedisplay();
 }
