@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <list>
+#include <vector>
 #include "robo.h"
 #include "alvo.h"
 #define INC_KEY 1
-#define INC_KEYIDLE 0.2
+#define INC_KEYIDLE 0.5
 
 //Key status
 int keyStatus[256];
@@ -27,6 +29,10 @@ int animate = 0;
 Robo robo; //Um rodo
 Tiro * tiro = NULL; //Um tiro por vez
 Alvo alvo(0, 200); //Um alvo por vez
+
+// shots list
+std::list<Tiro*> shots;
+
 
 void renderScene(void);
 void keyPress(unsigned char key, int x, int y);
@@ -71,7 +77,10 @@ void renderScene(void)
  
      robo.Desenha();
      
-     if (tiro) tiro->Desenha();
+    //  if (tiro) tiro->Desenha();
+    for(Tiro * shot: shots) {
+        shot->Desenha();
+    }
      
      alvo.Desenha();
 
@@ -96,32 +105,42 @@ void keyPress(unsigned char key, int x, int y)
              break;
         case 'f':
         case 'F':
-             robo.RodaBraco1(-INC_KEY);   //Without keyStatus trick
+             keyStatus[(int)('f')] = 1;
+            //  robo.RodaBraco1(-INC_KEY);   //Without keyStatus trick
              break;
         case 'r':
         case 'R':
-             robo.RodaBraco1(+INC_KEY);   //Without keyStatus trick
+            keyStatus[(int)('r')] = 1;
+            //  robo.RodaBraco1(+INC_KEY);   //Without keyStatus trick
              break;
         case 'g':
         case 'G':
-             robo.RodaBraco2(-INC_KEY);   //Without keyStatus trick
+            keyStatus[(int)('g')] = 1;
+            //  robo.RodaBraco2(-INC_KEY);   //Without keyStatus trick
              break;
         case 't':
         case 'T':
-             robo.RodaBraco2(+INC_KEY);   //Without keyStatus trick
+            keyStatus[(int)('t')] = 1;
+            //  robo.RodaBraco2(+INC_KEY);   //Without keyStatus trick
              break;
         case 'h':
         case 'H':
-             robo.RodaBraco3(-INC_KEY);   //Without keyStatus trick
+             keyStatus[(int)('h')] = 1;
+            //  robo.RodaBraco3(-INC_KEY);   //Without keyStatus trick
              break;
         case 'y':
         case 'Y':
-             robo.RodaBraco3(+INC_KEY);   //Without keyStatus trick
+            keyStatus[(int)('y')] = 1;
+            //  robo.RodaBraco3(+INC_KEY);   //Without keyStatus trick
              break;
         case ' ':
-             if (!tiro)
-                tiro = robo.Atira();
-             break;
+            //  if (!tiro){
+            //     tiro = robo.Atira();
+            //  }
+            
+            shots.push_back(robo.Atira());
+            
+            break;
         case 27 :
              exit(0);
     }
@@ -166,34 +185,75 @@ void init(void)
 //=============
 void idle(void)
 {
+
+    static GLdouble previousTime = glutGet(GLUT_ELAPSED_TIME);
+    GLdouble currentTime, timeDiference;
+    //Pega o tempo que passou do inicio da aplicacao
+    currentTime = glutGet(GLUT_ELAPSED_TIME);
+    // Calcula o tempo decorrido desde de a ultima frame.
+    timeDiference = currentTime - previousTime;
+    //Atualiza o tempo do ultimo frame ocorrido
+    previousTime = currentTime;
+
+
     double inc = INC_KEYIDLE;
+    
     //Treat keyPress
-    if(keyStatus[(int)('a')])
-    {
+    if(keyStatus[(int)('a')]){
         robo.MoveEmX(-inc);
     }
-    if(keyStatus[(int)('d')])
-    {
+    if(keyStatus[(int)('d')]){
         robo.MoveEmX(inc);
     }
-    
+    if(keyStatus[(int)('f')]){
+        robo.RodaBraco1(-inc);
+    }
+    if(keyStatus[(int)('r')]){
+        robo.RodaBraco1(+inc);
+    }
+    if(keyStatus[(int)('g')]){
+        robo.RodaBraco2(-inc);
+    }
+    if(keyStatus[(int)('t')]){
+        robo.RodaBraco2(+inc);
+    }
+    if(keyStatus[(int)('h')]){
+        robo.RodaBraco3(-inc);
+    }
+    if(keyStatus[(int)('y')]){
+        robo.RodaBraco3(+inc);
+    }
+
     //Trata o tiro (soh permite um tiro por vez)
     //Poderia usar uma lista para tratar varios tiros
-    if(tiro){
-        tiro->Move();
+    // if(tiro){
+    //     tiro->Move();
 
-        //Trata colisao
-        if (alvo.Atingido(tiro)){
-            alvo.Recria(rand()%500 - 250, 200);
+    //     //Trata colisao
+    //     if (alvo.Atingido(tiro)){
+    //         alvo.Recria(rand()%500 - 250, 200);
+    //     }
+
+    //     if (!tiro->Valido()){ 
+    //         delete tiro;
+    //         tiro = NULL;
+    //     }
+    // }
+    
+    
+    for (auto shot = shots.begin(); shot != shots.end();) {
+        if(*shot) {
+            (*shot)->Move(timeDiference); 
         }
-
-        if (!tiro->Valido()){ 
-            delete tiro;
-            tiro = NULL;
+        if (not (*shot)->Valido()) {
+            delete (*shot);
+            shot = shots.erase(shot);
+        } else {
+         ++shot;
         }
     }
-    
-    
+
+
     //Control animation
     if (animate){
         static int dir = 1;

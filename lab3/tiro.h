@@ -23,14 +23,14 @@ public:
         gX = initPoint[0]; 
         gY = initPoint[1];
         // gDirectionAng = directionAng; 
-        gVel = 0.2;
+        gVel = 0.5;
         directionVector[0] = directVec[0];
         directionVector[1] = directVec[1];
     };
     void Desenha(){ 
         DesenhaTiro(gX, gY);
     };
-    void Move();
+    void Move(GLdouble timeDiff);
     bool Valido();
     void GetPos(GLfloat &xOut, GLfloat &yOut){
         xOut = gX;

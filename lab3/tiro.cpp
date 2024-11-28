@@ -23,11 +23,11 @@ void Tiro::DesenhaTiro(GLfloat x, GLfloat y)
   glPopMatrix();
 }
 
-void Tiro::Move()
+void Tiro::Move(GLdouble timeDiff)
 {
-  GLfloat auxVec[2] = { 
-    Tiro::directionVector[0] * Tiro::gVel,
-    Tiro::directionVector[1] * Tiro::gVel  
+  GLdouble auxVec[2] = { 
+    Tiro::directionVector[0] * Tiro::gVel * timeDiff,   // Distance = velocity * time
+    Tiro::directionVector[1] * Tiro::gVel * timeDiff 
   };
 
   gX += auxVec[0];
