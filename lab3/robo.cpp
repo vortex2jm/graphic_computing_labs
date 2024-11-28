@@ -84,13 +84,8 @@ void Robo::RodaBraco3(GLfloat inc)
 
 void Robo::MoveEmX(GLfloat dx)
 {
-  glTranslatef(dx, 0.0, 0.0);
+  Robo::gX += dx;
   gThetaWheel -= dx;
-}
-
-//Funcao auxiliar de rotacao
-void RotatePoint(GLfloat x, GLfloat y, GLfloat angle, GLfloat &xOut, GLfloat &yOut){
-
 }
 
 Tiro* Robo::Atira()
@@ -102,16 +97,21 @@ Tiro* Robo::Atira()
   matrix_tools::translatePoint2f(point, 0, paddleHeight);
   matrix_tools::rotatePoint2f(point, gTheta1);
   matrix_tools::translatePoint2f(point, 0, baseHeight);
-  matrix_tools::translatePoint2f(point, 0, Robo::gY);
-
+  matrix_tools::translatePoint2f(point, Robo::gX, Robo::gY);
+  
   float base_vector[2] = { 0, 0 };
-  matrix_tools::rotatePoint2f(point, gTheta3);
-  matrix_tools::translatePoint2f(point, 0, paddleHeight);
-  matrix_tools::rotatePoint2f(point, gTheta2);
-  matrix_tools::translatePoint2f(point, 0, paddleHeight);
-  matrix_tools::rotatePoint2f(point, gTheta1);
-  matrix_tools::translatePoint2f(point, 0, baseHeight);
-  matrix_tools::translatePoint2f(point, 0, Robo::gY);
-
-  return new Tiro(point[0], point[1], 10);
+  matrix_tools::rotatePoint2f(base_vector, gTheta3);
+  matrix_tools::translatePoint2f(base_vector, 0, paddleHeight);
+  matrix_tools::rotatePoint2f(base_vector, gTheta2);
+  matrix_tools::translatePoint2f(base_vector, 0, paddleHeight);
+  matrix_tools::rotatePoint2f(base_vector, gTheta1);
+  matrix_tools::translatePoint2f(base_vector, 0, baseHeight);
+  matrix_tools::translatePoint2f(base_vector, Robo::gX, Robo::gY);
+  
+  // Calculating normalized direction vector
+  float directionVector[2] = { point[0] - base_vector[0], point[1] - base_vector[1] };
+  float directionVectorNorm = sqrt(pow(directionVector[0],2) + pow(directionVector[1], 2));
+  float normalizedDirectionVector[2] = { directionVector[0]/directionVectorNorm, directionVector[1]/directionVectorNorm };
+  
+  return new Tiro(point, normalizedDirectionVector);
 }

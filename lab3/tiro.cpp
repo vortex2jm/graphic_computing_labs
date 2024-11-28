@@ -6,7 +6,7 @@ void Tiro::DesenhaCirc(GLint radius, GLfloat R, GLfloat G, GLfloat B)
 {
   glColor3f(R, G, B);
   glBegin(GL_TRIANGLE_FAN);
-    for(int i=0; i<360; i+=0.1){
+    for(float i=0; i<360; i+=0.1){
       GLfloat rad = i * M_PI / 180.0;
       GLfloat x = radius * cos(rad);
       GLfloat y = radius * sin(rad);
@@ -18,7 +18,6 @@ void Tiro::DesenhaCirc(GLint radius, GLfloat R, GLfloat G, GLfloat B)
 void Tiro::DesenhaTiro(GLfloat x, GLfloat y)
 {
   glPushMatrix();
-    glLoadIdentity();
     glTranslatef(x, y, 0);
     Tiro::DesenhaCirc(radiusTiro, 1, 1, 1);  
   glPopMatrix();
@@ -26,10 +25,16 @@ void Tiro::DesenhaTiro(GLfloat x, GLfloat y)
 
 void Tiro::Move()
 {
+  GLfloat auxVec[2] = { 
+    Tiro::directionVector[0] * Tiro::gVel,
+    Tiro::directionVector[1] * Tiro::gVel  
+  };
 
+  gX += auxVec[0];
+  gY += auxVec[1];
 }
 
 bool Tiro::Valido()
 {
-  return true;
+  return !(Tiro::gX > DISTANCIA_MAX or Tiro::gY > DISTANCIA_MAX);
 }

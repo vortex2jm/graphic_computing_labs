@@ -7,7 +7,7 @@
 #include "robo.h"
 #include "alvo.h"
 #define INC_KEY 1
-#define INC_KEYIDLE 1
+#define INC_KEYIDLE 0.2
 
 //Key status
 int keyStatus[256];
@@ -28,6 +28,42 @@ Robo robo; //Um rodo
 Tiro * tiro = NULL; //Um tiro por vez
 Alvo alvo(0, 200); //Um alvo por vez
 
+void renderScene(void);
+void keyPress(unsigned char key, int x, int y);
+void keyup(unsigned char key, int x, int y);
+void ResetKeyStatus();
+void init(void);
+void idle(void);
+
+
+// MAIN=========================================================================
+int main(int argc, char *argv[])
+{
+    // Initialize openGL with Double buffer and RGB color without transparency.
+    // Its interesting to try GLUT_SINGLE instead of GLUT_DOUBLE.
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+ 
+    // Create the window.
+    glutInitWindowSize(Width, Height);
+    glutInitWindowPosition(150,50);
+    glutCreateWindow("Tranformations 2D");
+ 
+    // Define callbacks.
+    glutDisplayFunc(renderScene);
+    glutKeyboardFunc(keyPress);
+    glutIdleFunc(idle);
+    glutKeyboardUpFunc(keyup);
+    
+    init();
+ 
+    glutMainLoop();
+ 
+    return 0;
+}
+
+
+//=====================
 void renderScene(void)
 {
      // Clear the screen.
@@ -39,9 +75,10 @@ void renderScene(void)
      
      alvo.Desenha();
 
-     glutSwapBuffers(); // Desenha the new frame of the game.
+     glutSwapBuffers(); // Draw the new frame of the game.
 }
 
+//============================================
 void keyPress(unsigned char key, int x, int y)
 {
     switch (key)
@@ -91,12 +128,14 @@ void keyPress(unsigned char key, int x, int y)
     glutPostRedisplay();
 }
 
+//========================================
 void keyup(unsigned char key, int x, int y)
 {
     keyStatus[(int)(key)] = 0;
     glutPostRedisplay();
 }
 
+//===================
 void ResetKeyStatus()
 {
     int i;
@@ -105,24 +144,26 @@ void ResetKeyStatus()
        keyStatus[i] = 0; 
 }
 
+//=============
 void init(void)
 {
     ResetKeyStatus();
     // The color the windows will redraw. Its done to erase the previous frame.
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black, no opacity(alpha).
  
-    glMatrixMode(GL_PROJECTION); // Select the projection matrix    
-    glOrtho(-(ViewingWidth/2),     // X coordinate of left edge             
-            (ViewingWidth/2),     // X coordinate of right edge            
-            -(ViewingHeight/2),     // Y coordinate of bottom edge             
-            (ViewingHeight/2),     // Y coordinate of top edge             
-            -100,     // Z coordinate of the “near” plane            
+    glMatrixMode(GL_PROJECTION); // Select the projection matrix    
+    glOrtho(-(ViewingWidth/2),     // X coordinate of left edge             
+            (ViewingWidth/2),     // X coordinate of right edge            
+            -(ViewingHeight/2),     // Y coordinate of bottom edge             
+            (ViewingHeight/2),     // Y coordinate of top edge             
+            -100,     // Z coordinate of the “near” plane            
             100);    // Z coordinate of the “far” plane
-    glMatrixMode(GL_MODELVIEW); // Select the projection matrix    
+    glMatrixMode(GL_MODELVIEW); // Select the projection matrix    
     glLoadIdentity();
       
 }
 
+//=============
 void idle(void)
 {
     double inc = INC_KEYIDLE;
@@ -166,29 +207,4 @@ void idle(void)
     }
     
     glutPostRedisplay();
-}
- 
-int main(int argc, char *argv[])
-{
-    // Initialize openGL with Double buffer and RGB color without transparency.
-    // Its interesting to try GLUT_SINGLE instead of GLUT_DOUBLE.
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
- 
-    // Create the window.
-    glutInitWindowSize(Width, Height);
-    glutInitWindowPosition(150,50);
-    glutCreateWindow("Tranformations 2D");
- 
-    // Define callbacks.
-    glutDisplayFunc(renderScene);
-    glutKeyboardFunc(keyPress);
-    glutIdleFunc(idle);
-    glutKeyboardUpFunc(keyup);
-    
-    init();
- 
-    glutMainLoop();
- 
-    return 0;
 }
